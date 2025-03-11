@@ -23,9 +23,16 @@ app.use(express.json());
 
 // Function to authorize Google Sheets
 async function authorize() {
-  const credentials = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'tough-transport-406613-d666fe922c08.json'), 'utf8')
-  );
+    let credentials;
+    // If GOOGLE_CREDENTIALS environment variable is set, use it.
+    if (process.env.GOOGLE_CREDENTIALS) {
+      credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    } else {
+      // Otherwise, read from the local JSON file
+      credentials = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'tough-transport-406613-d666fe922c08.json'), 'utf8')
+      );
+    }
   const { client_email, private_key } = credentials;
   const auth = new google.auth.JWT({
     email: client_email,
@@ -40,50 +47,52 @@ async function authorize() {
 }
 
 // Function to get or create a sheet for today within the specified spreadsheet
+// Function to get or create a sheet for today within the specified spreadsheet
 async function getOrCreateSheet(auth, spreadsheetId) {
-  const sheets = google.sheets({ version: 'v4', auth });
-  const today = new Date().toISOString().split('T')[0]; // e.g. "2025-03-10"
-
-  // Retrieve spreadsheet metadata to check existing sheet titles
-  const sheetMetadata = await sheets.spreadsheets.get({ spreadsheetId });
-  const sheetsList = sheetMetadata.data.sheets || [];
-  const sheetTitles = sheetsList.map(sheet => sheet.properties.title);
-
-  // If today's sheet already exists, return its title
-  if (sheetTitles.includes(today)) {
-    return today;
-  }
-
-  // Create a new sheet with today's date (1000 rows, 4 columns)
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    resource: {
-      requests: [{
-        addSheet: {
-          properties: {
-            title: today,
-            gridProperties: {
-              rowCount: 1000,
-              columnCount: 4
+    const sheets = google.sheets({ version: 'v4', auth });
+    const today = new Date().toISOString().split('T')[0]; // e.g. "2025-03-10"
+  
+    // Retrieve spreadsheet metadata to check existing sheet titles
+    const sheetMetadata = await sheets.spreadsheets.get({ spreadsheetId });
+    const sheetsList = sheetMetadata.data.sheets || [];
+    const sheetTitles = sheetsList.map(sheet => sheet.properties.title);
+  
+    // If today's sheet already exists, return its title
+    if (sheetTitles.includes(today)) {
+      return today;
+    }
+  
+    // If no sheet exists with today's date, create a new one
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      resource: {
+        requests: [{
+          addSheet: {
+            properties: {
+              title: today,
+              gridProperties: {
+                rowCount: 1000,
+                columnCount: 4
+              }
             }
           }
-        }
-      }]
-    }
-  });
-
-  // Write headers in columns A-D (JobId, Title, Company, Url)
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `${today}!A1:D1`,
-    valueInputOption: 'RAW',
-    resource: {
-      values: [['JobId', 'Title', 'Company', 'Url']]
-    }
-  });
-
-  return today;
-}
+        }]
+      }
+    });
+  
+    // Write headers in columns A-D (JobId, Title, Company, Url)
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${today}!A1:D1`,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [['JobId', 'Title', 'Company', 'Url']]
+      }
+    });
+  
+    return today;
+  }
+  
 
 // Function to get existing JobIds from the given sheet (assumes headers in row 1)
 async function getExistingJobIds(auth, spreadsheetId, sheetName) {
