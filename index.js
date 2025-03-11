@@ -207,17 +207,14 @@ async function processJobs() {
 }
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, async() => {
   console.log(`Server running on port ${PORT}`);
-});
-
-// Schedule the job using node-cron at 9:00, 15:00, and 21:00 every day
-cron.schedule('0 8,12,16 * * 1-5', async () => {
   try {
-    console.log('Cron job started: Processing jobs...');
+    console.log('Processing jobs...');
     const result = await processJobs();
-    console.log('Cron job result:', result);
+    console.log('Processing Successful');
   } catch (error) {
     console.error('Error running cron job:', error);
   }
 });
+
