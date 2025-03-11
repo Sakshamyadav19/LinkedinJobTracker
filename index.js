@@ -206,22 +206,6 @@ async function processJobs() {
   }
 }
 
-// API endpoint that calls processJobs()
-app.get('/api/jobs', async (req, res) => {
-  try {
-    const result = await processJobs();
-    res.json(result);
-  } catch (error) {
-    console.error('Error processing jobs:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Root route
-app.get('/', (req, res) => {
-  res.send('LinkedIn Job Scraper API is running.');
-});
-
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
