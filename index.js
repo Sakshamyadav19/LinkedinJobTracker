@@ -47,7 +47,6 @@ async function authorize() {
 }
 
 // Function to get or create a sheet for today within the specified spreadsheet
-// Function to get or create a sheet for today within the specified spreadsheet
 async function getOrCreateSheet(auth, spreadsheetId) {
     const sheets = google.sheets({ version: 'v4', auth });
     const today = new Date().toISOString().split('T')[0]; // e.g. "2025-03-10"
@@ -190,8 +189,7 @@ async function processJobs() {
   const result = await response.json();
   const apiResponse = { success: true, data: result, query: { keywords, location, datePosted, titleIds, sort, page } };
   const jobsData = extractJobData(apiResponse);
-  console.log('Jobs fetched:', jobsData);
-  
+    
   // Process Google Sheets updates if there are jobs
   if (jobsData.length > 0) {
     const auth = await authorize();
