@@ -2,7 +2,7 @@ name: Run LinkedIn Job Scraper
 
 on:
   schedule:
-    - cron: '0 8,12,16 * * 1-5'  # Runs at 08:00, 12:00, and 16:00 UTC (Monday-Friday)
+    - cron: '0 1,5,9 * * 1-5'  # Runs at 08:00, 12:00, and 16:00 UTC (Monday-Friday)
   workflow_dispatch:  # Allows manual execution from GitHub Actions UI
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run the LinkedIn Job Scraper
-        run: node index.js
+        run: npm run job 
