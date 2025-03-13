@@ -4,7 +4,8 @@ on:
   schedule:
     - cron: '0 1,5,9 * * 1-5'  # Runs at 08:00, 12:00, and 16:00 UTC (Monday-Friday)
   workflow_dispatch:  # Allows manual execution from GitHub Actions UI
-
+  push:
+    branches: [main]
 jobs:
   run-script:
     runs-on: ubuntu-latest
